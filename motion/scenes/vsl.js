@@ -299,8 +299,10 @@
     const t0 = T[f.t];
     const t1 = idx < FEATURES.length - 1 ? T[FEATURES[idx + 1].t] - 0.4 : T.proof - 0.4;
     const hy = P ? H * 0.2 : H * 0.25;
-    badge(c, f.n, cx, hy - (P ? 120 : 105) * u, ease.outCubic(prog(t, t0, t0 + 0.3)) * (1 - prog(t, t1, t1 + 0.3)));
-    kinetic(c, f.words, cx, hy, t0 + 0.05, t1, { t, size: (P ? 96 : 92) * u, maxW: W * (P ? 0.88 : 0.8) });
+    const k = kinetic(c, f.words, cx, hy, t0 + 0.05, t1, { t, size: (P ? 96 : 92) * u, maxW: W * (P ? 0.88 : 0.8) });
+    // le badge remonte quand le titre passe sur deux lignes
+    const by = hy - (P ? 115 : 105) * u - ((k.lines - 1) * k.lh) / 2;
+    badge(c, f.n, cx, by, ease.outCubic(prog(t, t0, t0 + 0.3)) * (1 - prog(t, t1, t1 + 0.3)));
     const lay = CARD_LAYOUT[P ? 'portrait' : 'landscape'][f.t];
     lay.forEach(([name, x, y, sc, rot], i) => {
       const cv = name === 'surveys' ? cards.surveysAnim(prog(t, t0 + 0.9, t0 + 2.2)) : name === 'map' ? cards.mapAnim(ease.inOutCubic(prog(t, t0 + 0.6, t0 + 2.0)))
