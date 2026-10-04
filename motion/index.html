@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroSfer Motion</title>
+<style>
+  @font-face { font-family: "Cinzel"; src: url("assets/fonts/Cinzel.ttf") format("truetype"); font-weight: 400 900; }
+  @font-face { font-family: "Libre Baskerville"; src: url("assets/fonts/LibreBaskerville.ttf") format("truetype"); font-weight: 400 700; }
+  @font-face { font-family: "Montserrat"; src: url("assets/fonts/Montserrat.ttf") format("truetype"); font-weight: 100 900; }
+  html, body { margin: 0; background: #111; }
+  canvas { display: block; }
+  body.preview { display: grid; place-items: center; min-height: 100vh; }
+  body.preview canvas { max-width: 100vw; max-height: 100vh; width: auto; height: auto; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="scene.js"></script>
+<script>
+  // Aperçu temps réel : ouvrir index.html?preview (ajouter &format=9x16 pour le vertical).
+  // Le rendu vidéo (render.mjs) pilote AGRO.renderFrame(t) image par image.
+  const q = new URLSearchParams(location.search);
+  if (q.has('preview')) {
+    document.body.classList.add('preview');
+    const [w, h] = q.get('format') === '9x16' ? [1080, 1920] : [1920, 1080];
+    AGRO.init(w, h).then(() => {
+      const t0 = performance.now();
+      const loop = () => {
+        const t = ((performance.now() - t0) / 1000) % (AGRO.DURATION + 0.6);
+        AGRO.renderFrame(Math.min(t, AGRO.DURATION));
+        requestAnimationFrame(loop);
+      };
+      loop();
+    });
+  }
+</script>
+</body>
+</html>

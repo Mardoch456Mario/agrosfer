@@ -1,0 +1,11 @@
+{
+  "name": "agrosfer-motion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "render": "node render.mjs --format 16x9 && node render.mjs --format 9x16"
+  },
+  "dependencies": {
+    "playwright": "^1.56.1"
+  }
+}

@@ -1,0 +1,5 @@
+node_modules/
+motion/out/
+*.wav
+*.sfx.json
+__pycache__/
