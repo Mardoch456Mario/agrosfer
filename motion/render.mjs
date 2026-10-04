@@ -49,12 +49,13 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const url = `http://127.0.0.1:${server.address().port}/index.html?scene=${scene}`;
 
-const browser = await playwright.chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const browser = await playwright.chromium.launch();
 const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
 page.on('pageerror', (e) => console.error('page error:', e));
 page.on('console', (m) => m.type() === 'error' && console.error('console:', m.text()));
 await page.goto(url);
 await page.evaluate(() => window.sceneReady);
+await page.waitForFunction(() => window.SCENE);
 await page.evaluate(([w, h]) => SCENE.init(w, h), [W, H]);
 const canvas = await page.$('#c');
 const duration = await page.evaluate(() => SCENE.DURATION);

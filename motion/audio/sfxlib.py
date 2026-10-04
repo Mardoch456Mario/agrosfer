@@ -273,3 +273,11 @@ def spinup(dur=0.45, **_):
 
 
 GEN["spinup"] = spinup
+
+
+def riser(dur=1.0, **_):
+    from musiclib import riser as _r
+    return _r(dur=dur) * 0.7
+
+
+GEN["riser"] = riser
