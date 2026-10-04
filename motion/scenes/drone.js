@@ -493,26 +493,30 @@
     c.fillStyle = COL.beam;
     c.fillRect(0, 0, W, yb);
     const e = ease.outCubic(prog(t, T.endCard, T.endCard + 0.45));
-    const tagY = yb - H + L.cy + e * (L.portrait ? 120 : 110) * u;
-    fitText(c, 'Cultiver. Tracer. Connecter.', L.cx, tagY, {
-      size: (L.portrait ? 64 : 74) * u,
-      weight: 700,
-      family: 'Libre Baskerville',
-      track: 0.01,
-      color: COL.tag,
-      maxW: W * 0.84,
+    // signature officielle d'AgroSfer, sur deux lignes
+    const tagY = yb - H + L.cy + e * 72 * u;
+    const ts = (L.portrait ? 62 : 66) * u;
+    ['Filières agricoles', 'durables et traçables.'].forEach((line, i) => {
+      fitText(c, line, L.cx, tagY + (i - 0.5) * ts * 1.25, {
+        size: ts,
+        weight: 700,
+        family: 'Libre Baskerville',
+        track: 0.01,
+        color: COL.tag,
+        maxW: W * 0.86,
+      });
     });
     // carte de fin : logo + url
     const pl = prog(t, T.endCard + 0.08, T.endCard + 0.5);
     if (pl > 0) {
       const s = ease.outBack(pl, 1.8);
       const grow = ease.outBack(prog(t, T.endCard + 0.22, T.endCard + 0.7), 1.9);
-      drawLogo(c, L.cx, L.cy - (L.portrait ? 120 : 95) * u, (L.portrait ? 290 : 255) * u, { sx: s, sy: s, grow });
+      drawLogo(c, L.cx, L.cy - (L.portrait ? 175 : 160) * u, (L.portrait ? 270 : 230) * u, { sx: s, sy: s, grow });
     }
     const pu = ease.outCubic(prog(t, T.endCard + 0.35, T.endCard + 0.75));
     if (pu > 0) {
       c.globalAlpha = pu;
-      fitText(c, 'agrosfer.co', L.cx, L.cy + (L.portrait ? 200 : 195) * u + (1 - pu) * 14 * u, {
+      fitText(c, 'agrosfer.co', L.cx, L.cy + (L.portrait ? 215 : 205) * u + (1 - pu) * 14 * u, {
         size: 30 * u,
         weight: 600,
         family: 'Montserrat',

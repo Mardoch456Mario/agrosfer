@@ -379,35 +379,36 @@ def score_vsl(T, duration):
     s.hit("keys", 14, M.epiano(M.chord("C4", "E4", "G4", "D5"), dur=1.0, vel=0.8))
     for i, n in enumerate(("C6", "E6", "G6")):
         s.hit("bell", 14 + 0.25 + i * 0.25, M.bell(n, dur=1.5, vel=0.5))
-    # bars 4-9 : fonctionnalités, groove complet + mélodie
+    # fonctionnalités (5 x 1,5 mesure) puis preuves : groove complet + mélodie
+    b_end = int(round(T["end"] / beat))          # temps du final (carte de fin)
+    b_offer = int(round(T["offer"] / beat))
+    last_bar = b_end // 4 - 1
     hook = [(0, "E5"), (0.5, "G5"), (1, "A5"), (1.5, "G5"), (2.5, "E5"), (3, "D5"), (3.5, "C5")]
-    for bar in range(4, 10):
+    for bar in range(4, last_bar + 1):
         groove(bar)
-        marimba_bar(bar, 0.45)
-        if bar % 2 == 0:
+        marimba_bar(bar, 0.45 if bar * 4 < b_offer else 0.6, dense=bar * 4 >= b_offer)
+        if bar % 2 == 0 and bar * 4 < b_offer:
             for p, n in hook:
                 s.hit("bell", bar * 4 + p, M.bell(n, dur=0.8, vel=0.35))
-        if bar in (4, 7):
-            s.hit("fx", bar * 4, M.crash(dur=1.6), 0.5)
-    # bars 10-11 : l'offre, montée
-    groove(10)
-    groove(11, kick=True)
-    marimba_bar(10, 0.6, dense=True)
-    marimba_bar(11, 0.6, dense=True)
-    for k in range(8):
-        s.hit("clap", 46 + k * 0.25, M.clap(dur=0.15), 0.3 + 0.07 * k)
-    s.at("fx", s.bt(44), M.riser(dur=4 * beat), 0.6)
-    s.at("fx", s.bt(47), M.reverse_cymbal(dur=beat), 1.0)
-    # bar 12 : fin, accord résolu, carillon au clic
-    s.kick_at(48, M.kick(decay=3.5))
-    s.hit("fx", 48, M.crash(dur=2.5), 0.8)
-    s.hit("fx", 48, M.impact(dur=2.0), 0.5)
+    for key in ("f1", "f2", "f3", "f4", "f5", "proof", "offer"):
+        s.at("fx", T[key], M.crash(dur=1.6), 0.45)
+    # demi-mesure avant le final : roulement de claps + montée
+    b_tail = (last_bar + 1) * 4
+    for k in range(int((b_end - b_tail) * 4)):
+        s.hit("clap", b_tail + k * 0.25, M.clap(dur=0.15), 0.3 + 0.08 * k)
+    _shaker_bar(s, last_bar + 1, gain=0.8, beats=b_end - b_tail)
+    s.at("fx", T["offer"], M.riser(dur=T["end"] - T["offer"]), 0.6)
+    s.at("fx", T["end"] - beat, M.reverse_cymbal(dur=beat), 1.0)
+    # final : accord résolu, carillon au clic
+    s.kick_at(b_end, M.kick(decay=3.5))
+    s.hit("fx", b_end, M.crash(dur=2.5), 0.8)
+    s.hit("fx", b_end, M.impact(dur=2.0), 0.5)
     Cmaj9 = M.chord("E4", "G4", "B4", "D5")
-    s.hit("keys", 48, M.epiano(Cmaj9, dur=2.5, vel=0.8))
-    s.hit("pad", 48, M.pad(Cmaj9, dur=3.0, cutoff=2400, release=1.2))
-    s.hit("bass", 48, M.sub("C2", dur=2.0, release=1.0))
+    s.hit("keys", b_end, M.epiano(Cmaj9, dur=2.5, vel=0.8))
+    s.hit("pad", b_end, M.pad(Cmaj9, dur=3.0, cutoff=2400, release=1.2))
+    s.hit("bass", b_end, M.sub("C2", dur=2.0, release=1.0))
     for k in range(8):
-        s.hit("shaker", 48 + k * 0.25, M.shaker(), [1, 0.4, 0.7, 0.4][k % 4] * (1 - k / 10))
+        s.hit("shaker", b_end + k * 0.25, M.shaker(), [1, 0.4, 0.7, 0.4][k % 4] * (1 - k / 10))
     for i, n in enumerate(("C5", "E5", "G5", "C6")):
         s.at("mar", T["click"] + 0.05 + i * 0.09, M.marimba(n, vel=0.7))
     return s.render()

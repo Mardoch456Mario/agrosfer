@@ -9,9 +9,10 @@
   const T = {
     h1: 0.25, notifs: b(1) - 0.5, h2: b(1) + 0.35, h3: b(2), h3b: b(2) + 0.55, hookOut: b(3) - 0.3,
     disc: b(3), brand: b(3.5), brandOut: b(4) - 0.25,
-    f1: b(4), f2: b(5.5), f3: b(7), f4: b(8.5),
-    offer: b(10), o1: b(10) + 0.2, o2: b(10) + 1.0, o3: b(10) + 2.0, offerOut: b(12) - 0.3,
-    end: b(12), cta: b(12) + 0.9, click: b(12) + 1.9, fin: b(13) + 0.5,
+    f1: b(4), f2: b(5.5), f3: b(7), f4: b(8.5), f5: b(10),
+    proof: b(11.5), proofOut: b(13.5) - 0.3,
+    offer: b(13.5), o1: b(13.5) + 0.2, o2: b(13.5) + 0.9, o3: b(13.5) + 1.7, offerOut: b(15.5) - 0.3,
+    end: b(15.5), cta: b(15.5) + 0.9, click: b(15.5) + 1.9, fin: b(17) + 0.5,
   };
   const DURATION = T.fin;
 
@@ -24,7 +25,15 @@
     { t: 'f1', n: '01', words: [['Vos', 0], ['producteurs,', 0], ['recensés.', 1]], cards: ['producer', 'surveys'] },
     { t: 'f2', n: '02', words: [['Chaque', 0], ['parcelle', 0], ['cartographiée.', 1]], cards: ['map'] },
     { t: 'f3', n: '03', words: [['Chaque', 0], ['lot', 0], ['tracé.', 1]], cards: ['trace'] },
-    { t: 'f4', n: '04', words: [['Des', 0], ['paiements', 1], ['sécurisés.', 0]], cards: ['pay', 'notif'] },
+    { t: 'f4', n: '04', words: [['Des', 0], ['paiements', 0], ['par', 0], ['mobile', 1], ['money.', 1]], cards: ['pay', 'notif'] },
+    { t: 'f5', n: '05', words: [['Vendez', 0], ['directement', 0], ['aux', 0], ['industriels.', 1]], cards: ['listing', 'order'] },
+  ];
+  // cas clients publiés sur agrosfer.co/solutions et dans les actualités du site
+  const CASES = [
+    { crop: 'Ananas', org: 'FENACOPAB', place: 'Allada, Bénin', line: ['Membres digitalisés, parcelles', 'cartographiées, audits GlobalG.A.P.'], col: '#E0A526' },
+    { crop: 'Cacao bio', org: 'KANY', place: 'Abidjan, Côte d’Ivoire', line: ['Traçabilité complète, des champs', 'aux conteneurs vers l’Europe'], col: '#8A5A3C' },
+    { crop: 'Orange', org: 'ORANA', place: 'Zakpota, Bénin', line: ['Sourcing des producteurs pour', 'l’usine de transformation'], col: '#E8792B' },
+    { crop: 'Maïs', org: 'Somdia · CFC', place: 'Cameroun', line: ['1 500 agriculteurs suivis,', '5 000 ha par campagne'], col: '#5E9E2E' },
   ];
 
   const SFX = [
@@ -47,6 +56,10 @@
     { t: T.f2 + 0.8, type: 'beep', f: 2000, n: 3, gap: 0.25, gain: 0.25 },
     ...[0, 1, 2, 3].map((i) => ({ t: T.f3 + 0.9 + i * 0.35, type: 'tick', f: 1900 + i * 180, gain: 0.4 })),
     { t: T.f4 + 1.5, type: 'cash', gain: 0.6 },
+    { t: T.f5 + 1.2, type: 'notif', gain: 0.5 },
+    { t: T.proof - 0.03, type: 'swish', dur: 0.3, gain: 0.45 },
+    ...[0, 1, 2, 3].map((i) => ({ t: T.proof + 0.5 + i * 0.22, type: 'ui_pop', f: 700 + i * 120, gain: 0.45 })),
+    { t: T.proofOut, type: 'whoosh', dur: 0.4, f0: 600, f1: 2400, gain: 0.4 },
     { t: T.o1, type: 'swish', dur: 0.3, gain: 0.35 },
     { t: T.o2, type: 'swish', dur: 0.3, gain: 0.45 },
     { t: T.o3, type: 'pop', f0: 350, f1: 900, gain: 0.5 },
@@ -260,7 +273,7 @@
     const ta = ease.outCubic(prog(t, T.brand + 0.45, T.brand + 0.9)) * (1 - out);
     if (ta > 0) {
       c.globalAlpha = ta;
-      text(c, 'Construire des filières durables et traçables', cx, cy + (P ? 190 : 175) * u * sc, { size: (P ? 40 : 38) * u, weight: 600, family: FONT, color: C.inkSoft, align: 'center' });
+      text(c, 'Filières agricoles durables et traçables', cx, cy + (P ? 190 : 175) * u * sc, { size: (P ? 40 : 38) * u, weight: 600, family: FONT, color: C.inkSoft, align: 'center' });
       c.globalAlpha = 1;
     }
   }
@@ -271,18 +284,20 @@
       f2: [['map', 0.5, 0.67, 1.8, 0]],
       f3: [['trace', 0.5, 0.68, 1.55, 0]],
       f4: [['pay', 0.4, 0.67, 1.55, -2], ['notif', 0.69, 0.8, 1.4, 2]],
+      f5: [['listing', 0.37, 0.67, 1.5, -2], ['order', 0.67, 0.7, 1.35, 2]],
     },
     portrait: {
       f1: [['producer', 0.5, 0.48, 2.1, -2], ['surveys', 0.55, 0.78, 1.3, 3]],
       f2: [['map', 0.5, 0.6, 2.25, 0]],
       f3: [['trace', 0.5, 0.62, 2.15, 0]],
       f4: [['pay', 0.5, 0.52, 2.2, -2], ['notif', 0.5, 0.75, 2.2, 2]],
+      f5: [['listing', 0.5, 0.5, 2.05, -2], ['order', 0.5, 0.78, 1.95, 2]],
     },
   };
 
   function seqFeature(c, t, f, idx) {
     const t0 = T[f.t];
-    const t1 = idx < 3 ? T[FEATURES[idx + 1].t] - 0.4 : T.offer - 0.4;
+    const t1 = idx < FEATURES.length - 1 ? T[FEATURES[idx + 1].t] - 0.4 : T.proof - 0.4;
     const hy = P ? H * 0.2 : H * 0.25;
     badge(c, f.n, cx, hy - (P ? 120 : 105) * u, ease.outCubic(prog(t, t0, t0 + 0.3)) * (1 - prog(t, t1, t1 + 0.3)));
     kinetic(c, f.words, cx, hy, t0 + 0.05, t1, { t, size: (P ? 96 : 92) * u, maxW: W * (P ? 0.88 : 0.8) });
@@ -309,12 +324,39 @@
     }
   }
 
+  // preuves : cas clients réels
+  function seqProof(c, t) {
+    const hy = P ? H * 0.16 : H * 0.17;
+    kinetic(c, [['Ils', 0], ['digitalisent', 0], ['déjà', 0], ['leurs', 0], ['filières.', 1]], cx, hy, T.proof + 0.05, T.proofOut, { t, size: (P ? 84 : 80) * u, maxW: W * 0.86 });
+    const cw = 440;
+    const ch = 214;
+    CASES.forEach((k, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const ks = P ? 1.45 : 1.4;
+      const x = P ? cx : cx + (col - 0.5) * (cw + 40) * u * ks;
+      const y = P ? H * 0.31 + i * (ch + 20) * u * ks : H * 0.42 + row * (ch + 40) * u * ks;
+      cardIn(c, cards.cases[i], x, y, t, T.proof + 0.45 + i * 0.22, T.proofOut, { scale: ks * u, rot: 0 });
+    });
+  }
+
+  // offre réelle : formule FREE (0 FCFA) pour digitaliser son organisation
   function seqOffer(c, t) {
     const y = cy;
-    // en vertical : "Simple à déployer." sur une ligne, "Pour toute votre filière." sur deux lignes, plus bas
-    kinetic(c, [['Une', 0], ['plateforme', 0], ['complète.', 0]], cx, y - (P ? 290 : 150) * u, T.o1, T.offerOut, { t, size: (P ? 54 : 52) * u, weight: 600, color: C.inkSoft });
-    kinetic(c, [['Simple', 0], ['à', 0], ['déployer.', 0]], cx, y - (P ? 165 : 10) * u, T.o2, T.offerOut, { t, size: (P ? 86 : 120) * u, maxW: W * 0.92 });
-    kinetic(c, [['Pour', 0], ['toute', 0], ['votre', 0], ['filière.', 0]], cx, y + (P ? 40 : 130) * u, T.o3, T.offerOut, { t, size: (P ? 100 : 120) * u, color: C.green });
+    kinetic(c, [['Digitalisez', 0], ['votre', 0], ['organisation.', 0]], cx, y - (P ? 170 : 120) * u, T.o1, T.offerOut, { t, size: (P ? 72 : 84) * u, maxW: W * 0.9 });
+    kinetic(c, [['Gratuitement.', 1]], cx, y + (P ? 10 : 20) * u, T.o2, T.offerOut, { t, size: (P ? 130 : 150) * u });
+    const a = ease.outBack(prog(t, T.o3, T.o3 + 0.4), 1.8) * (1 - ease.inCubic(prog(t, T.offerOut, T.offerOut + 0.3)));
+    if (a > 0) {
+      c.save();
+      c.globalAlpha = clamp(a);
+      c.translate(cx, y + (P ? 170 : 175) * u);
+      c.scale(clamp(a, 0, 1.15), clamp(a, 0, 1.15));
+      UI.pill(c, 0, 0, 'Offre FREE · 0 FCFA par producteur', { size: (P ? 32 : 34) * u, bg: '#fff', border: C.green, lw: 3 * u, color: C.ink, align: 'center', weight: 700, family: FONT });
+      c.restore();
+      c.globalAlpha = clamp(a) * 0.9;
+      text(c, 'Pour les coopératives d’agriculteurs et les industriels', cx, y + (P ? 250 : 255) * u, { size: (P ? 28 : 28) * u, weight: 600, family: FONT, color: C.inkSoft, align: 'center' });
+      c.globalAlpha = 1;
+    }
   }
 
   function seqEnd(c, t) {
@@ -354,7 +396,7 @@
       c.shadowOffsetY = 12 * u;
       fillRR(c, -bw / 2, -bh / 2, bw, bh, bh / 2, C.green);
       c.shadowColor = 'transparent';
-      text(c, 'Demander une démo', -18 * u, 2 * u, { size: 32 * u, weight: 700, family: FONT, color: '#fff', align: 'center' });
+      text(c, 'Créer votre compte', -18 * u, 2 * u, { size: 32 * u, weight: 700, family: FONT, color: '#fff', align: 'center' });
       UI.icon(c, 'arrow', bw / 2 - 72 * u, -16 * u, 32 * u, '#fff', 2.6);
       c.restore();
       // onde
@@ -373,7 +415,7 @@
       const ua = ease.outCubic(prog(t, T.click + 0.3, T.click + 0.7));
       if (ua > 0) {
         c.globalAlpha = ua;
-        text(c, 'agrosfer.co', cx, by + (P ? 120 : 110) * u, { size: 30 * u, weight: 600, family: 'JetBrains Mono', color: C.inkSoft, align: 'center', tracking: 0.08 });
+        text(c, 'ou demandez une démo · agrosfer.co', cx, by + (P ? 120 : 110) * u, { size: 28 * u, weight: 600, family: FONT, color: C.inkSoft, align: 'center' });
         c.globalAlpha = 1;
       }
     }
@@ -426,7 +468,30 @@
       };
       cards = {
         producer: mk(400, 230, (c, a, b2) => UI.producer(c, 0, 0, a, b2, L)),
-        notif: mk(400, 76, (c, a, b2) => UI.notif(c, 0, 0, a, b2, L, { title: 'Paiement envoyé', sub: '425 000 XOF · Awa Koné', icon: 'check', time: '14:02' })),
+        notif: mk(400, 76, (c, a, b2) => UI.notif(c, 0, 0, a, b2, L, { title: 'Paiement envoyé', sub: '425 000 XOF · mobile money', icon: 'check', time: '14:02' })),
+        order: mk(400, 250, (c, a, b2) => UI.order(c, 0, 0, a, b2, L, { title: 'Offre d’achat reçue', sub: 'Transformateur · Europe', rows: [['Produit', 'Cacao bio'], ['Volume', '12 t'], ['Prix proposé', 'Négocié en ligne']], status: 'Acceptée' })),
+        listing: mk(420, 260, (c, a, b2) => {
+          text(c, 'PLACE DE MARCHÉ', 22, 32, { size: 13, weight: 700, color: L.muted, tracking: 0.08 });
+          UI.chip(c, a - 160, 32, 'Annonce publiée', L, 'green', 13);
+          text(c, 'Cacao biologique', 22, 74, { size: 26, weight: 800, color: L.text, tracking: -0.02 });
+          [['Volume', '12 t'], ['Disponibilité', 'Avril 2026'], ['Traçabilité', 'Lot tracé, certifié']].forEach(([k2, v], i) => {
+            text(c, k2, 22, 116 + i * 30, { size: 14.5, weight: 500, color: L.muted });
+            text(c, v, a - 22, 116 + i * 30, { size: 14.5, weight: 700, color: L.text, align: 'right' });
+          });
+          UI.chip(c, 22, 226, '3 offres d’industriels', L, 'blue', 13.5);
+        }),
+        cases: CASES.map((k) => mk(440, 214, (c, a) => {
+          c.globalAlpha = 0.14;
+          fillRR(c, 22, 20, measure(c, k.crop, { size: 15, weight: 700, family: FONT }) + 28, 32, 16, k.col);
+          c.globalAlpha = 1;
+          text(c, k.crop, 36, 37, { size: 15, weight: 700, family: FONT, color: k.col });
+          text(c, k.org, 22, 86, { size: 30, weight: 800, family: FONT, color: L.text, tracking: -0.02 });
+          UI.icon(c, 'pin', 20, 106, 20, L.muted, 2);
+          text(c, k.place, 46, 117, { size: 15, weight: 600, family: FONT, color: L.muted });
+          c.fillStyle = L.border;
+          c.fillRect(22, 140, a - 44, 1.5);
+          k.line.forEach((ln, i) => text(c, ln, 22, 164 + i * 24, { size: 15.5, weight: 600, family: FONT, color: L.text }));
+        })),
         surveysAnim: memo((p) => mk(380, 480, (c, a, b2) => UI.surveys(c, 0, 0, a, b2, L, { p: 1, count: p }))),
         mapAnim: memo((p) => mk(420, 300, (c, a, b2) => UI.map(c, 0, 0, a, b2, L, { p, label: p >= 1 ? 'Parcelle A-128 · 2,4 ha' : 'Relevé GPS en cours…' })), 30),
         traceAnim: memo((p) => mk(400, 380, (c, a, b2) => UI.trace(c, 0, 0, a, b2, L, { p }))),
@@ -443,13 +508,14 @@
       background(c, t);
       if (t < T.disc) seqHook(c, t);
       else if (t < T.f1) seqBrand(c, t);
-      else if (t < T.offer) {
+      else if (t < T.proof) {
         FEATURES.forEach((f, i) => {
           const t0 = T[f.t];
-          const t1 = i < 3 ? T[FEATURES[i + 1].t] : T.offer;
+          const t1 = i < FEATURES.length - 1 ? T[FEATURES[i + 1].t] : T.proof;
           if (t >= t0 - 0.05 && t < t1 + 0.05) seqFeature(c, t, f, i);
         });
-      } else if (t < T.end) seqOffer(c, t);
+      } else if (t < T.offer) seqProof(c, t);
+      else if (t < T.end) seqOffer(c, t);
       else seqEnd(c, t);
     },
   });

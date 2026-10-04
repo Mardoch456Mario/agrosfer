@@ -9,7 +9,7 @@
   const BPM = 120;
   const BEAT = 60 / BPM;
   const T = {
-    hello: 0.5, name: 1.1, nameOut: 2.35, pins: 2.7, s1Out: 3.65,
+    hello: 0.45, name: 0.95, merge: 1.7, nameOut: 2.35, pins: 2.55, s1Out: 3.65,
     s2: 4.0, w1: 4.05, w2: 4.5, w3: 5.4, w4: 6.3, s2Out: 7.6,
     s3: 8.0, l1: 8.25, l2: 9.15, l3: 10.05, l4: 10.95, s3Out: 11.75,
     s4: 12.0, line1: 12.2, line2: 13.2, s4Out: 14.35,
@@ -31,10 +31,10 @@
     { t: T.name, type: 'glitch', dur: 0.4, gain: 0.5 },
     { t: T.name + 0.35, type: 'boom', gain: 0.55 },
     { t: T.nameOut, type: 'glitch', dur: 0.3, gain: 0.4 },
-    { t: T.pins, type: 'beep', f: 1760, n: 1, gain: 0.45 },
-    { t: T.pins + 0.2, type: 'beep', f: 1975, n: 1, gain: 0.45 },
-    { t: T.pins + 0.4, type: 'beep', f: 2350, n: 2, gain: 0.45 },
-    { t: T.pins + 0.55, type: 'swish', dur: 0.6, gain: 0.35 },
+    { t: T.merge, type: 'glitch', dur: 0.3, gain: 0.5 },
+    { t: T.merge + 0.1, type: 'pop', f0: 500, f1: 1100, gain: 0.4 },
+    ...[0, 1, 2, 3, 4].map((i) => ({ t: T.pins + i * 0.12, type: 'beep', f: 1760 + i * 160, n: 1, gain: 0.4 })),
+    { t: T.pins + 0.45, type: 'swish', dur: 0.7, gain: 0.35 },
     { t: T.s1Out - 0.1, type: 'whoosh', dur: 0.5, f0: 300, f1: 3000, gain: 0.6 },
     ...[T.w1, T.w2, T.w3, T.w4].map((t, i) => ({ t: t - 0.03, type: 'swish', dur: 0.28, gain: 0.5 + i * 0.03 })),
     ...[T.w2, T.w3, T.w4].map((t, i) => ({ t: t + 0.12, type: 'ui_pop', f: 700 + i * 140, gain: 0.55 })),
@@ -66,10 +66,13 @@
   let mask, maskCtx, glow, glowCtx, planetLayer;
 
   const GLOBE = (window.GLOBE_POINTS || []).map(([la, lo]) => [rad(la), rad(lo)]);
+  // pays où AgroSfer est implantée ou mène des projets (site + presse)
   const PINS = [
-    { name: 'CÔTE D’IVOIRE', lat: 5.36, lon: -4.01 },
-    { name: 'BÉNIN', lat: 6.37, lon: 2.42 },
-    { name: 'FRANCE', lat: 48.86, lon: 2.35 },
+    { name: 'SÉNÉGAL', lat: 14.69, lon: -17.44, side: -1, dy: -52 },
+    { name: 'CÔTE D’IVOIRE', lat: 5.36, lon: -4.01, side: -1, dy: 56 },
+    { name: 'BÉNIN', lat: 6.37, lon: 2.42, side: 1, dy: -62 },
+    { name: 'CAMEROUN', lat: 4.05, lon: 9.7, side: 1, dy: 54 },
+    { name: 'FRANCE', lat: 48.86, lon: 2.35, side: -1, dy: -50 },
   ];
 
   // ---------------------------------------------------------------- helpers
@@ -82,6 +85,25 @@
     const cv = canvas(w + pad * 2, o.size * 1.35 + pad * 2);
     const c = cv.getContext('2d');
     text(c, str, pad, cv.height / 2, { ...o, align: 'left' });
+    cv.pad = pad;
+    txtCache.set(key, cv);
+    return cv;
+  }
+
+  // texte multicolore : parts = [[texte, couleur], ...]
+  function richCanvas(parts, o) {
+    const key = JSON.stringify(parts) + JSON.stringify(o);
+    if (txtCache.has(key)) return txtCache.get(key);
+    const tmp = canvas(4, 4).getContext('2d');
+    const ws = parts.map(([s]) => measure(tmp, s, o));
+    const pad = o.size * 0.25;
+    const cv = canvas(ws.reduce((a, b) => a + b, 0) + pad * 2, o.size * 1.35 + pad * 2);
+    const c = cv.getContext('2d');
+    let x = pad;
+    parts.forEach(([s, col], i) => {
+      text(c, s, x, cv.height / 2, { ...o, color: col, align: 'left' });
+      x += ws[i];
+    });
     cv.pad = pad;
     txtCache.set(key, cv);
     return cv;
@@ -262,8 +284,8 @@
         const [x, y, z] = project(rad(p.lat), rad(p.lon), lat0, lon0);
         return { ...p, X: gx + x * R, Y: gy - y * R, z };
       });
-      // arcs Abidjan -> Cotonou -> Paris
-      const arcs = [[0, 1, T.pins + 0.35], [1, 2, T.pins + 0.55]];
+      // arcs : Dakar -> Abidjan -> Cotonou -> Douala, Cotonou -> Paris
+      const arcs = [[0, 1, T.pins + 0.3], [1, 2, T.pins + 0.42], [2, 3, T.pins + 0.54], [2, 4, T.pins + 0.66]];
       for (const [a, b, t0] of arcs) {
         const pr = ease.inOutCubic(prog(t, t0, t0 + 0.5));
         if (pr <= 0) continue;
@@ -290,7 +312,7 @@
         c.restore();
       }
       pts.forEach((p, i) => {
-        const t0 = T.pins + i * 0.2;
+        const t0 = T.pins + i * 0.12;
         const a = ease.outBack(prog(t, t0, t0 + 0.35), 2.5);
         if (a <= 0) return;
         c.save();
@@ -308,17 +330,17 @@
         c.arc(p.X, p.Y, 7 * u * a, 0, 7);
         c.fill();
         // étiquette
-        const lx = p.X + (i === 1 ? 30 : -30) * u;
-        const ly = p.Y - 62 * u;
+        const lx = p.X + p.side * 30 * u;
+        const ly = p.Y + p.dy * u;
         c.strokeStyle = 'rgba(255,255,255,0.6)';
         c.lineWidth = 1.2 * u;
         c.beginPath();
-        c.moveTo(lx, ly + 17 * u);
-        c.lineTo(p.X, p.Y - 10 * u);
+        c.moveTo(lx, ly + Math.sign(-p.dy) * 17 * u);
+        c.lineTo(p.X, p.Y - Math.sign(p.dy) * 10 * u);
         c.stroke();
         UI.pill(c, lx, ly, p.name, {
           size: 15 * u, bg: 'rgba(10,18,14,0.85)', border: 'rgba(140,198,63,0.7)', color: C.white, family: 'JetBrains Mono',
-          align: i === 1 ? 'left' : 'right', weight: 600, h: 34 * u,
+          align: p.side > 0 ? 'left' : 'right', weight: 600, h: 34 * u,
         });
         c.restore();
       });
@@ -327,10 +349,29 @@
     // texte d'accueil
     const hello = textCanvas('Bonjour, nous sommes', { size: (P ? 46 : 40) * u, weight: 500, color: C.dim });
     const name = textCanvas('AgroSfer', { size: (P ? 200 : 190) * u, weight: 800, color: C.white, tracking: -0.045 });
+    // AgroSfer = Agro + Sphère : un monde agricole vu comme une sphère unique
+    const parts = richCanvas([['Agro', C.white], [' + ', C.green], ['Sphère', C.white]], { size: (P ? 150 : 170) * u, weight: 800, tracking: -0.045 });
     const outP = 1 - prog(t, T.nameOut, T.nameOut + 0.3);
     const ty = cy - (P ? 40 : 20) * u;
     pixelReveal(c, hello, cx, ty - (P ? 150 : 130) * u, Math.min(prog(t, T.hello, T.hello + 0.35), outP), { seed: 2 });
-    pixelReveal(c, name, cx, ty, Math.min(prog(t, T.name, T.name + 0.45), outP), { seed: 5, glitch: t < T.name + 0.6 ? undefined : t > T.nameOut ? undefined : 0 });
+    pixelReveal(c, parts, cx, ty, Math.min(prog(t, T.name, T.name + 0.45), 1 - prog(t, T.merge, T.merge + 0.22)), { seed: 5 });
+    pixelReveal(c, name, cx, ty, Math.min(prog(t, T.merge + 0.1, T.merge + 0.45), outP), { seed: 7 });
+    // légende sous le globe
+    const ca = ease.outCubic(prog(t, T.pins + 0.2, T.pins + 0.6)) * (1 - ease.inCubic(prog(t, T.s1Out - 0.2, T.s1Out + 0.1)));
+    if (ca > 0) {
+      const capY = P ? gy + R + 110 * u : H - 92 * u;
+      const capS = (P ? 34 : 30) * u;
+      const str = 'Un seul monde agricole, où tous les acteurs sont liés.';
+      const cw = measure(c, str, { size: capS, weight: 500 }) + capS * 1.6;
+      const sc = Math.min(1, (W * 0.92) / cw);
+      c.save();
+      c.globalAlpha = ca;
+      c.translate(cx, capY + (1 - ca) * 16 * u);
+      c.scale(sc, sc);
+      fillRR(c, -cw / 2, -capS * 1.05, cw, capS * 2.1, capS * 1.05, 'rgba(6,12,9,0.85)');
+      text(c, str, 0, 1, { size: capS, weight: 500, color: 'rgba(244,247,245,0.9)', align: 'center' });
+      c.restore();
+    }
   }
 
   // grands mots successifs + cartes qui surgissent
@@ -389,10 +430,11 @@
 
   // mosaïque d'écrans qui défilent + mots-clés dans des cartouches
   const LABELS = [
-    { t: T.l1, str: 'Traçabilité', icon: 'scan' },
-    { t: T.l2, str: 'Paiements', icon: 'wallet' },
-    { t: T.l3, str: 'Données terrain', icon: 'pin' },
-    { t: T.l4, str: 'Accès aux marchés', icon: 'factory' },
+    // les trois modules de la plateforme (Sondage, Production, Marché) + la traçabilité
+    { t: T.l1, str: 'Sondage', icon: 'doc' },
+    { t: T.l2, str: 'Production', icon: 'sprout' },
+    { t: T.l3, str: 'Traçabilité', icon: 'scan' },
+    { t: T.l4, str: 'Place de marché', icon: 'factory' },
   ];
 
   function seqMosaic(c, t) {
@@ -494,8 +536,8 @@
     c.fillRect(0, 0, W, H);
     // texte
     const lines = [
-      { t: T.line1, str: 'de la parcelle', color: C.white },
-      { t: T.line2, str: 'à l’usine.', color: C.green },
+      { t: T.line1, str: 'du champ', color: C.white },
+      { t: T.line2, str: 'au conteneur.', color: C.green },
     ];
     lines.forEach((L, i) => {
       const a = ease.outCubic(prog(t, L.t, L.t + 0.35));
@@ -509,8 +551,10 @@
   }
 
   // rangées de tags qui défilent, "Nous sommes AgroSfer"
-  const TAGS = ['Enquêtes terrain', 'Traçabilité', 'AgroSfer Pay', 'Cartographie GPS', 'Coopératives', 'Industriels', 'Certification',
-    'Paiements mobiles', 'Tableaux de bord', 'Formation', 'Qualité', 'Production', 'Marchés', 'Export', 'Rendements', 'Données'];
+  // services réels listés sur agrosfer.co (offres, services clés, applications)
+  const TAGS = ['Bases de membres', 'Cartographie des parcelles', 'Itinéraires techniques', 'Traçabilité', 'Certifications', 'Questionnaires',
+    'Enquêtes terrain', 'Place de marché', 'Annonces', 'Suivi comptable', 'Paiement mobile', 'Mode hors ligne', 'Farmer Education',
+    'AgroStores', 'Mesure d’impact ODD', 'Coordination des campagnes', 'Vulgarisation', 'Agroécologie'];
   const PILL_STYLES = [
     { bg: '#8CC63F', color: '#0B120E' },
     { bg: '#4DA3E0', color: '#04121E' },
@@ -784,7 +828,7 @@
     const ta = ease.outCubic(prog(t, T.tag, T.tag + 0.5));
     if (ta > 0) {
       c.globalAlpha = ta;
-      text(c, 'Des filières durables et traçables', cx, ly + (P ? 150 : 135) * u + (1 - ta) * 16 * u, {
+      text(c, 'Filières agricoles durables et traçables', cx, ly + (P ? 150 : 135) * u + (1 - ta) * 16 * u, {
         size: (P ? 40 : 36) * u, weight: 500, color: 'rgba(244,247,245,0.8)', align: 'center',
       });
       const ta2 = ease.outCubic(prog(t, T.tag + 0.35, T.tag + 0.8));

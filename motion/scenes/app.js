@@ -13,16 +13,20 @@
     lock: b(1), notif: b(1) + 0.45, tap: b(1) + 1.65,
     search: b(2), type0: b(2) + 0.25, type1: b(2) + 1.15, sugg: b(2) + 1.2,
     map: b(3), trace0: b(3) + 0.3, trace1: b(3) + 1.4, validate: b(3) + 1.55,
-    producer: b(4), weighBtn: b(4) + 1.6,
-    weigh: b(5), count0: b(5) + 0.2, count1: b(5) + 1.1, steps: b(5) + 1.15,
-    pay: b(6), send: b(6) + 0.55, success: b(6) + 0.9,
-    chat: b(7), m1: b(7) + 0.3, m2: b(7) + 1.25, m3: b(7) + 2.3, order: b(7) + 3.1,
-    dash: b(9), chart0: b(9) + 0.25,
-    outro: b(10), trails: b(10) + 0.25, fill: b(11) - 0.2, word: b(11) + 0.15, tag: b(11) + 0.55, end: b(12),
+    train: b(4), play: b(4) + 0.55, lang: b(4) + 1.3,
+    producer: b(5), weighBtn: b(5) + 1.6,
+    weigh: b(6), count0: b(6) + 0.2, count1: b(6) + 1.1, steps: b(6) + 1.15,
+    pay: b(7), send: b(7) + 0.55, success: b(7) + 0.9,
+    chat: b(8), m1: b(8) + 0.3, m2: b(8) + 1.25, m3: b(8) + 2.3, order: b(8) + 3.1,
+    dash: b(10), chart0: b(10) + 0.25,
+    outro: b(11), trails: b(11) + 0.25, fill: b(12) - 0.2, word: b(12) + 0.15, tag: b(12) + 0.55, end: b(13),
   };
   const DURATION = T.end;
-  const SECTIONS = ['lock', 'search', 'map', 'producer', 'weigh', 'pay', 'chat', 'dash'];
-  const CAPTIONS = { search: ['01', 'Collecter'], map: ['02', 'Cartographier'], producer: ['03', 'Identifier'], weigh: ['04', 'Tracer'], pay: ['05', 'Payer'], chat: ['06', 'Vendre'], dash: ['07', 'Piloter'] };
+  const SECTIONS = ['lock', 'search', 'map', 'train', 'producer', 'weigh', 'pay', 'chat', 'dash'];
+  const CAPTIONS = {
+    search: ['01', 'Collecter'], map: ['02', 'Cartographier'], train: ['03', 'Former'], producer: ['04', 'Identifier'],
+    weigh: ['05', 'Tracer'], pay: ['06', 'Payer'], chat: ['07', 'Vendre'], dash: ['08', 'Piloter'],
+  };
 
   const SFX = [
     { t: 0.05, type: 'whoosh', dur: 1.0, f0: 150, f1: 700, gain: 0.3 },
@@ -37,6 +41,9 @@
     ...[0, 1, 2, 3, 4].map((i) => ({ t: T.trace0 + (i * (T.trace1 - T.trace0)) / 5 + 0.05, type: 'beep', f: 1800 + i * 150, n: 1, gain: 0.35 })),
     { t: T.validate, type: 'click', gain: 0.7 },
     { t: T.validate + 0.05, type: 'chime', gain: 0.45 },
+    { t: T.play, type: 'click', gain: 0.6 },
+    { t: T.play + 0.05, type: 'ui_pop', f: 600, gain: 0.4 },
+    ...[0, 1, 2, 3].map((i) => ({ t: T.lang + i * 0.12, type: 'tick', f: 1500 + i * 220, gain: 0.3 })),
     { t: T.producer + 0.25, type: 'ui_pop', f: 700, gain: 0.5 },
     { t: T.weighBtn, type: 'click', gain: 0.7 },
     { t: T.count0, type: 'riser', dur: T.count1 - T.count0, gain: 0.35 },
@@ -155,6 +162,7 @@
     c.fillRect(0, 0, 390, 844);
     statusBar(c);
     appHeader(c, 'Enquêtes', 'Coopérative Agri-Lagunes');
+    UI.chip(c, 248, 86, 'Hors ligne', D, 'muted', 12.5);
     const q = 'récolte cacao Daloa';
     const n = Math.floor(q.length * prog(lt, T.type0 - T.search, T.type1 - T.search));
     const typed = q.slice(0, n);
@@ -212,6 +220,106 @@
     const done = lt > T.validate - T.map;
     const press = Math.sin(Math.PI * clamp(prog(lt, T.validate - T.map - 0.05, T.validate - T.map + 0.12)));
     button(c, 24, 702, 342, 56, done ? 'Parcelle enregistrée' : 'Valider la parcelle', done ? D.green : D.surface2, done ? '#0B1A08' : D.text, { press, icon: done ? 'check' : 'pin' });
+  }
+
+  // AgroSfer Farmer Education : vidéos et audios de formation en langues locales
+  function scrTrain(c, lt) {
+    c.fillStyle = D.bg;
+    c.fillRect(0, 0, 390, 844);
+    statusBar(c);
+    appHeader(c, 'Farmer Education', 'Formations en langues locales');
+    // vignette vidéo (illustration d'un champ de maïs)
+    c.save();
+    rr(c, 20, 140, 350, 210, 18);
+    c.clip();
+    const sky = c.createLinearGradient(0, 140, 0, 350);
+    sky.addColorStop(0, '#F6E7A8');
+    sky.addColorStop(1, '#C9DE8A');
+    c.fillStyle = sky;
+    c.fillRect(20, 140, 350, 210);
+    c.fillStyle = '#FFF4C2';
+    c.beginPath();
+    c.arc(300, 185, 26, 0, 7);
+    c.fill();
+    c.fillStyle = '#7FA34A';
+    c.fillRect(20, 270, 350, 80);
+    for (let r = 0; r < 4; r++) {
+      for (let k = 0; k < 9; k++) {
+        const px = 30 + k * 40 + (r % 2) * 20;
+        const py = 268 + r * 22;
+        const sh = 26 + r * 6;
+        const sway = Math.sin(lt * 2 + k + r) * 2;
+        c.strokeStyle = r % 2 ? '#3F6B22' : '#4E7F2B';
+        c.lineWidth = 2.5 + r * 0.5;
+        c.beginPath();
+        c.moveTo(px, py);
+        c.quadraticCurveTo(px + sway, py - sh / 2, px + sway * 2, py - sh);
+        c.stroke();
+        c.fillStyle = r % 2 ? '#5C9433' : '#6FA83A';
+        c.beginPath();
+        c.ellipse(px + sway - 6, py - sh * 0.55, 8, 3, -0.6, 0, 7);
+        c.ellipse(px + sway + 6, py - sh * 0.7, 8, 3, 0.6, 0, 7);
+        c.fill();
+      }
+    }
+    const playing = lt > T.play - T.train;
+    if (!playing) {
+      c.fillStyle = 'rgba(0,0,0,0.25)';
+      c.fillRect(20, 140, 350, 210);
+      c.beginPath();
+      c.arc(195, 245, 34, 0, 7);
+      c.fillStyle = 'rgba(255,255,255,0.92)';
+      c.fill();
+      c.fillStyle = '#18241D';
+      c.beginPath();
+      c.moveTo(186, 230);
+      c.lineTo(186, 260);
+      c.lineTo(211, 245);
+      c.closePath();
+      c.fill();
+    }
+    const pr = playing ? clamp((lt - (T.play - T.train)) / 6) : 0;
+    c.fillStyle = 'rgba(255,255,255,0.35)';
+    c.fillRect(36, 334, 318, 4);
+    c.fillStyle = D.green;
+    c.fillRect(36, 334, 318 * (0.08 + pr), 4);
+    c.restore();
+    text(c, 'Le bon geste au bon moment', 24, 384, { size: 20, weight: 800, color: D.text, tracking: -0.01 });
+    text(c, 'Entretien des plants de maïs · 3 min', 24, 410, { size: 13.5, weight: 500, color: D.muted });
+    // langues
+    text(c, 'Langue', 24, 452, { size: 13, weight: 700, color: D.muted, tracking: 0.04 });
+    let x = 24;
+    ['Fon', 'Yoruba', 'Dioula', 'Français'].forEach((l, i) => {
+      const a = ease.outBack(prog(lt, T.lang - T.train + i * 0.12, T.lang - T.train + i * 0.12 + 0.3), 2);
+      const sel = i === 0;
+      const w = measure(c, l, { size: 14.5, weight: 700 }) + 30;
+      c.save();
+      c.globalAlpha = clamp(a);
+      c.translate(x + w / 2, 486);
+      c.scale(clamp(a, 0.6, 1.1), clamp(a, 0.6, 1.1));
+      fillRR(c, -w / 2, -17, w, 34, 17, sel ? D.green : D.surface2);
+      text(c, l, 0, 1, { size: 14.5, weight: 700, color: sel ? '#0B1A08' : D.text, align: 'center' });
+      c.restore();
+      x += w + 8;
+    });
+    // audio
+    fillRR(c, 20, 524, 350, 66, 16, D.surface);
+    UI.icon(c, 'chat', 36, 545, 24, D.green, 2);
+    for (let i = 0; i < 38; i++) {
+      const hgt = 6 + Math.abs(Math.sin(i * 1.7 + (playing ? lt * 7 : 0))) * 22 * (playing ? 1 : 0.4);
+      c.fillStyle = i / 38 < 0.08 + pr ? D.green : D.faint;
+      c.fillRect(74 + i * 7.4, 557 - hgt / 2, 4, hgt);
+    }
+    text(c, 'Audio en fon', 74, 580, { size: 11.5, weight: 600, color: D.muted });
+    text(c, 'Leçons de la campagne', 24, 624, { size: 13, weight: 700, color: D.muted, tracking: 0.04 });
+    [['Semis en ligne', '2 min'], ['Gestion de la fertilité des sols', '4 min']].forEach(([n, d], i) => {
+      const y = 642 + i * 58;
+      fillRR(c, 20, y, 350, 50, 12, D.surface);
+      UI.icon(c, 'sprout', 34, y + 13, 24, D.green, 2);
+      text(c, n, 68, y + 25, { size: 14.5, weight: 600, color: D.text });
+      text(c, d, 356, y + 25, { size: 12.5, weight: 500, color: D.muted, align: 'right' });
+    });
+    tabBar(c, 0);
   }
 
   function scrProducer(c, lt) {
@@ -347,7 +455,7 @@
     fillRR(c, 20, 62, 46, 46, 14, D.lemon);
     UI.icon(c, 'factory', 31, 73, 24, '#3A5A12', 2);
     text(c, 'Transformateur cacao', 78, 78, { size: 16.5, weight: 700, color: D.text });
-    text(c, 'Industriel · Abidjan · en ligne', 78, 98, { size: 12.5, weight: 500, color: D.green });
+    text(c, 'Place de marché · Abidjan · en ligne', 78, 98, { size: 12.5, weight: 500, color: D.green });
     c.fillStyle = D.border;
     c.fillRect(0, 126, 390, 1);
     text(c, "Aujourd'hui 10:12", 195, 156, { size: 12, weight: 600, color: D.faint, align: 'center' });
@@ -409,7 +517,7 @@
     tabBar(c, 4);
   }
 
-  const SCREENS = { lock: scrLock, search: scrSearch, map: scrMap, producer: scrProducer, weigh: scrWeigh, pay: scrPay, chat: scrChat, dash: scrDash };
+  const SCREENS = { lock: scrLock, search: scrSearch, map: scrMap, train: scrTrain, producer: scrProducer, weigh: scrWeigh, pay: scrPay, chat: scrChat, dash: scrDash };
 
   // ---------------------------------------------------------------- téléphone
   function sectionAt(t) {
@@ -484,6 +592,7 @@
     lock: [10, -16, 3, 1.0, 0, 30],
     search: [9, 17, -2, 1.02, 0, 40],
     map: [14, -18, 3, 1.04, 0, 30],
+    train: [9, 15, -2, 1.03, 0, 40],
     producer: [7, 14, -2, 1.0, 0, 40],
     weigh: [10, -12, 2, 1.32, 0, 280],
     pay: [9, 19, -3, 1.02, -20, 40],
@@ -526,7 +635,8 @@
       if (a > 0.001) list.push({ cv, x, y, z: z * clamp(a, 0, 1.2), a: clamp(a), sc });
     };
     add(pops.notif, 0, -60, -260, T.notif, T.search, 1.05);
-    add(pops.area, 120, 160, -300, T.validate + 0.1, T.producer, 1);
+    add(pops.area, 120, 160, -300, T.validate + 0.1, T.train, 1);
+    add(pops.lang, 105, 230, -300, T.lang + 0.45, T.producer, 1);
     add(pops.kg, -130, -120, -320, T.count1, T.pay, 1);
     add(pops.paid, 110, 180, -340, T.success + 0.1, T.chat, 1);
     add(pops.order, -60, 230, -320, T.order + 0.15, T.dash, 0.95);
@@ -663,7 +773,7 @@
     const ta = ease.outCubic(prog(t, T.tag, T.tag + 0.45));
     if (ta > 0) {
       c.globalAlpha = ta;
-      text(c, 'Digitalisez vos filières agricoles.', cx, oy + lh + 210 * u, { size: 40 * u, weight: 500, color: 'rgba(244,247,245,0.8)', align: 'center' });
+      text(c, 'Filières agricoles durables et traçables.', cx, oy + lh + 210 * u, { size: 40 * u, weight: 500, color: 'rgba(244,247,245,0.8)', align: 'center' });
       UI.pill(c, cx, oy + lh + 300 * u, 'agrosfer.co', { size: 30 * u, bg: '#8CC63F', color: '#0B1A08', align: 'center', weight: 700 });
       c.globalAlpha = 1;
     }
@@ -705,7 +815,13 @@
       phoneCtx = phoneCv.getContext('2d');
       const mk = (w2, h2, fn) => UI.card(w2, h2, (c) => fn(c, w2, h2), { pad: 30, scale: 2, radius: 20, bg: D.surface, shadowBlur: 40, shadowColor: 'rgba(0,0,0,0.6)' });
       pops = {
-        notif: mk(330, 70, (c, a, b2) => UI.notif(c, 0, 0, a, b2, D, { title: 'Nouvelle enquête', sub: 'Récolte & pesée · 24 producteurs', icon: 'doc', time: 'maint.' })),
+        notif: mk(330, 70, (c, a, b2) => UI.notif(c, 0, 0, a, b2, D, { title: 'AgroSfer Survey', sub: 'Nouvelle enquête : Récolte & pesée', icon: 'doc', time: 'maint.' })),
+        lang: mk(250, 96, (c) => {
+          fillRR(c, 16, 20, 56, 56, 16, D.lemon);
+          UI.icon(c, 'chat', 30, 34, 28, '#3A5A12', 2.2);
+          text(c, 'En fon', 88, 40, { size: 26, weight: 800, color: D.text });
+          text(c, 'vidéo + audio', 88, 68, { size: 14, weight: 500, color: D.muted });
+        }),
         area: mk(230, 92, (c) => {
           UI.icon(c, 'pin', 18, 24, 40, D.lemon, 2.2);
           text(c, '2,4 ha', 72, 38, { size: 30, weight: 800, color: D.text });
