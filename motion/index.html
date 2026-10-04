@@ -8,6 +8,8 @@
   @font-face { font-family: "Cinzel"; src: url("assets/fonts/Cinzel.ttf") format("truetype"); font-weight: 400 900; }
   @font-face { font-family: "Libre Baskerville"; src: url("assets/fonts/LibreBaskerville.ttf") format("truetype"); font-weight: 400 700; }
   @font-face { font-family: "Montserrat"; src: url("assets/fonts/Montserrat.ttf") format("truetype"); font-weight: 100 900; }
+  @font-face { font-family: "Inter"; src: url("assets/fonts/Inter.ttf") format("truetype"); font-weight: 100 900; }
+  @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono.ttf") format("truetype"); font-weight: 100 900; }
   html, body { margin: 0; background: #111; }
   canvas { display: block; }
   body.preview { display: grid; place-items: center; min-height: 100vh; }
@@ -16,19 +18,28 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<script src="scene.js"></script>
+<script src="lib/core.js"></script>
 <script>
-  // Aperçu temps réel : ouvrir index.html?preview (ajouter &format=9x16 pour le vertical).
-  // Le rendu vidéo (render.mjs) pilote AGRO.renderFrame(t) image par image.
+  // index.html?scene=drone|studio|app|vsl  (+ &preview pour l'aperçu temps réel, &format=9x16 pour le vertical)
+  // Le rendu vidéo (render.mjs) pilote SCENE.renderFrame(t) image par image.
   const q = new URLSearchParams(location.search);
+  const name = q.get('scene') || 'drone';
+  window.sceneReady = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = `scenes/${name}.js`;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.body.appendChild(s);
+  });
   if (q.has('preview')) {
     document.body.classList.add('preview');
-    const [w, h] = q.get('format') === '9x16' ? [1080, 1920] : [1920, 1080];
-    AGRO.init(w, h).then(() => {
+    sceneReady.then(async () => {
+      const [w, h] = q.get('format') === '9x16' ? [1080, 1920] : [1920, 1080];
+      await SCENE.init(w, h);
       const t0 = performance.now();
       const loop = () => {
-        const t = ((performance.now() - t0) / 1000) % (AGRO.DURATION + 0.6);
-        AGRO.renderFrame(Math.min(t, AGRO.DURATION));
+        const t = ((performance.now() - t0) / 1000) % (SCENE.DURATION + 0.6);
+        SCENE.renderFrame(Math.min(t, SCENE.DURATION));
         requestAnimationFrame(loop);
       };
       loop();

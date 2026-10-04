@@ -65,24 +65,37 @@
   // événements sonores (lus par le script audio)
   const SFX = [
     { t: 0.02, type: 'whoosh', dur: 0.45, f0: 500, f1: 1800, gain: 0.55 },
+    { t: 0.08, type: 'flutter', dur: 0.8, rate: 9, gain: 0.45 },
     { t: T.land, type: 'thud', gain: 1.0 },
+    { t: T.land + 0.11, type: 'tick', f: 1600, gain: 0.25 },
     { t: T.armIn, type: 'whoosh', dur: 0.5, f0: 2200, f1: 700, gain: 0.45 },
+    { t: T.armIn + 0.05, type: 'flutter', dur: 0.5, rate: 15, gain: 0.35 },
     { t: T.armHover - 0.02, type: 'tick', gain: 0.35 },
-    { t: T.snap, type: 'clack', gain: 0.9 },
+    { t: T.snap, type: 'clack', gain: 1.0 },
+    { t: T.snap + 0.02, type: 'spinup', gain: 0.55 },
     { t: T.liftStart, type: 'whoosh', dur: 0.32, f0: 400, f1: 2600, gain: 0.6 },
     { t: T.liftStart + 0.04, type: 'pop', f0: 380, f1: 900, gain: 0.5 },
     { t: T.beamOn, type: 'lightOn', gain: 1.0 },
-    { t: T.beamOn + 0.08, type: 'grow', gain: 0.45 },
-    ...ORBIT.map(([a, b], i) => ({ t: a - 0.02, type: 'whoosh', dur: (b - a) + 0.14, f0: 700 + i * 90, f1: 2400 - i * 120, gain: 0.5 })),
-    { t: T.absorb, type: 'suck', dur: T.absorbEnd - T.absorb, gain: 0.7 },
-    { t: T.absorbEnd - 0.03, type: 'pop', f0: 900, f1: 260, gain: 0.6 },
-    { t: T.toRight, type: 'whoosh', dur: 0.42, f0: 600, f1: 2000, gain: 0.5 },
-    { t: T.pull - 0.05, type: 'whoosh', dur: 0.75, f0: 300, f1: 1400, gain: 0.85 },
-    { t: T.pullEnd - 0.04, type: 'thud', gain: 0.65 },
-    { t: T.dropStart - 0.04, type: 'whoosh', dur: 0.55, f0: 1600, f1: 350, gain: 0.7 },
-    { t: T.dropEnd - 0.03, type: 'thud', gain: 0.55 },
-    { t: T.endCard + 0.1, type: 'pop', f0: 420, f1: 1000, gain: 0.45 },
-    { t: T.endCard + 0.12, type: 'chime', gain: 1.1 },
+    { t: T.beamOn + 0.08, type: 'grow', gain: 0.5 },
+    { t: T.beamOn + 0.3, type: 'sparkle', gain: 0.5 },
+    ...ORBIT.map(([a, b], i) => ({ t: a - 0.02, type: 'whoosh', dur: (b - a) + 0.14, f0: 700 + i * 90, f1: 2400 - i * 120, gain: 0.55 })),
+    ...ORBIT.map(([a, b], i) => ({ t: a + 0.02, type: 'doppler', dur: b - a + 0.1, f: 170 + i * 12, gain: 0.35 })),
+    // bip de "scan" à chaque arrêt du drone (donnée tracée)
+    ...ORBIT.map(([, b], i) => ({ t: b + 0.02, type: 'beep', f: 1900 + (i % 3) * 260, n: i % 2 ? 2 : 1, gain: 0.4 })),
+    { t: T.absorb, type: 'suck', dur: T.absorbEnd - T.absorb, gain: 0.75 },
+    { t: T.absorbEnd - 0.03, type: 'pop', f0: 900, f1: 260, gain: 0.65 },
+    { t: T.absorbEnd + 0.08, type: 'beep', f: 2600, n: 3, gap: 0.06, gain: 0.4 },
+    { t: T.toRight, type: 'whoosh', dur: 0.42, f0: 600, f1: 2000, gain: 0.55 },
+    { t: T.toRight + 0.03, type: 'doppler', dur: 0.4, f: 190, gain: 0.35 },
+    { t: T.pull - 0.05, type: 'whoosh', dur: 0.75, f0: 300, f1: 1400, gain: 0.9 },
+    { t: T.pull + 0.25, type: 'swish', dur: 0.3, gain: 0.45 },
+    { t: T.pullEnd - 0.04, type: 'thud', gain: 0.7 },
+    { t: T.pullEnd, type: 'sparkle', gain: 0.45 },
+    { t: T.dropStart - 0.04, type: 'whoosh', dur: 0.55, f0: 1600, f1: 350, gain: 0.75 },
+    { t: T.dropEnd - 0.03, type: 'thud', gain: 0.6 },
+    { t: T.endCard + 0.1, type: 'pop', f0: 420, f1: 1000, gain: 0.5 },
+    { t: T.endCard + 0.12, type: 'chime', gain: 0.9 },
+    { t: T.endCard + 0.4, type: 'swish', dur: 0.25, gain: 0.3 },
   ];
 
   // ---------- state ----------
@@ -576,5 +589,5 @@
     return out;
   }
 
-  window.AGRO = { init, renderFrame, drawScene, track, DURATION, SFX, T };
+  window.SCENE = { init, renderFrame, drawScene, track, DURATION, SFX, T, MUSIC: { score: "drone" } };
 })();
