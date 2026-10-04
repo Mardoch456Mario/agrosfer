@@ -311,9 +311,10 @@
 
   function seqOffer(c, t) {
     const y = cy;
-    kinetic(c, [['Une', 0], ['plateforme', 0], ['complète.', 0]], cx, y - (P ? 210 : 150) * u, T.o1, T.offerOut, { t, size: (P ? 56 : 52) * u, weight: 600, color: C.inkSoft });
-    kinetic(c, [['Simple', 0], ['à', 0], ['déployer.', 0]], cx, y - (P ? 40 : 10) * u, T.o2, T.offerOut, { t, size: (P ? 120 : 120) * u });
-    kinetic(c, [['Pour', 0], ['toute', 0], ['votre', 0], ['filière.', 0]], cx, y + (P ? 130 : 130) * u, T.o3, T.offerOut, { t, size: (P ? 104 : 120) * u, color: C.green });
+    // en vertical : "Simple à déployer." sur une ligne, "Pour toute votre filière." sur deux lignes, plus bas
+    kinetic(c, [['Une', 0], ['plateforme', 0], ['complète.', 0]], cx, y - (P ? 290 : 150) * u, T.o1, T.offerOut, { t, size: (P ? 54 : 52) * u, weight: 600, color: C.inkSoft });
+    kinetic(c, [['Simple', 0], ['à', 0], ['déployer.', 0]], cx, y - (P ? 165 : 10) * u, T.o2, T.offerOut, { t, size: (P ? 86 : 120) * u, maxW: W * 0.92 });
+    kinetic(c, [['Pour', 0], ['toute', 0], ['votre', 0], ['filière.', 0]], cx, y + (P ? 40 : 130) * u, T.o3, T.offerOut, { t, size: (P ? 100 : 120) * u, color: C.green });
   }
 
   function seqEnd(c, t) {
